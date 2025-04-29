@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.main-container{
+    flex: 1;
+    position: relative;
+    max-height: 100vh;
+}
+
+.main-content{
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    padding-bottom: 70px;
+}
+body{
+    background-color: black;
+}
+
+.main-content::-webkit-scrollbar{
+    width: 0;
+}
+
+.main-content::-webkit-scrollbar-thumb{
+    background-color: transparent;
+}
