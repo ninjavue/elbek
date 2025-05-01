@@ -4,15 +4,39 @@ import { BsPlayCircle } from "react-icons/bs";
 import { IoPlay, IoPause, IoVolumeHigh } from "react-icons/io5";
 import { MdForward10, MdReplay10 } from "react-icons/md";
 import { AiOutlineFullscreen, AiFillStar } from "react-icons/ai";
-import video from "../../assets/video/video.mp4";
+import { useParams } from "react-router-dom";
 
 const Lesson = () => {
+  const { id } = useParams();
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [showControls, setShowControls] = useState(true);
+  const [lessons, setLessons ] = useState([]);
+  const [course, setCourse ] = useState({});
+  const [media, setMedia ] = useState(null);
+  const [mediaId, setMediaId ] = useState(1);
+
+
+  const fetchCourseById = async () => {
+    fetch("http://127.0.0.1:8000/api/v1/lessons/")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Error" + res.status);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setCourse(data[0]?.lessons_name)
+        setMedia(data[0].lesson)
+        setLessons(data);
+      })
+      .catch((err) => {
+        console.error("Xatolik:", err);
+      });
+  }
 
   useEffect(() => {
     const video = videoRef.current;
@@ -24,6 +48,7 @@ const Lesson = () => {
         setCurrentTime(video.currentTime);
       });
     }
+    fetchCourseById();
   }, []);
 
   const formatTime = (time) => {
@@ -88,6 +113,15 @@ const Lesson = () => {
     }, 3000);
     return () => clearTimeout(timeout);
   };
+  const handleMedia = (id) => {
+    setMediaId(id)
+    lessons.forEach(item => {
+      if(item.id === id){
+        setMedia(item.lesson)
+      }
+      
+    });
+  }
 
   const reviews = [
     {
@@ -167,7 +201,7 @@ const Lesson = () => {
           >
             <video 
               ref={videoRef}
-              src={video} 
+              src={media} 
               className="w-full h-full object-cover rounded-lg"
               onClick={togglePlay}
             />
@@ -239,7 +273,7 @@ const Lesson = () => {
               </div>
             </div>
           </div>
-          <h1 className="text-2xl font-bold mt-4">#1 TypeScript nima</h1>
+          <h1 className="text-2xl font-bold mt-4">#{mediaId} - dars</h1>
         </div>
         <div className="dark:bg-[#18181b] mt-7 bg-white dark:text-white text-black rounded-lg p-6 border-[3px] dark:border-gray-700">
           <div className="flex items-center justify-between mb-6">
@@ -289,7 +323,7 @@ const Lesson = () => {
         <div className="dark:bg-[#18181b] bg-white dark:text-white text-black rounded-lg p-6 border-[3px] dark:border-gray-700">
           {/* Course Title */}
           <div className="flex items-center gap-4 mb-8">
-            <h1 className="text-3xl font-bold">TypeScript</h1>
+            <h1 className="text-3xl font-bold">{course?.lesson_name}</h1>
           </div>
 
           {/* Course Modules */}
@@ -298,48 +332,19 @@ const Lesson = () => {
             <div className="border border-gray-700 rounded-lg">
               <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-800">
                 <div className="flex items-center gap-3">
-                  <span className="text-gray-400">1-Modul.</span>
-                  <h2 className="font-medium">TypeScript asoslari</h2>
+                  <h2 className="font-medium">{course?.lesson_name}</h2>
                 </div>
                 <FaChevronDown className="text-gray-400" />
               </div>
 
               {/* Module Lessons */}
               <div className="border-t border-gray-700">
-                <div className="p-4 flex items-center gap-3 hover:bg-gray-800 cursor-pointer">
-                  <BsPlayCircle className="text-xl text-gray-400" />
-                  <span>#1. TypeScript nima</span>
-                </div>
-                <div className="p-4 flex items-center gap-3 hover:bg-gray-800 cursor-pointer border-t border-gray-700">
-                  <BsPlayCircle className="text-xl text-gray-400" />
-                  <span>#2. TypeScript asosiy type</span>
-                </div>
-                <div className="p-4 flex items-center gap-3 hover:bg-gray-800 cursor-pointer border-t border-gray-700">
-                  <BsPlayCircle className="text-xl text-gray-400" />
-                  <span>#3. Function type</span>
-                </div>
+              {lessons.map((item,index) => (
+                <div key={item.id} onClick={() => handleMedia(item.id)} className={`p-4 flex items-center gap-3 hover:bg-gray-600 cursor-pointer ${item.id === mediaId?"bg-gray-800":''}`}>
+                <BsPlayCircle className="text-xl text-gray-400" />
+                <span>#{index + 1}. dars</span>
               </div>
-            </div>
-
-            {/* Module 2 */}
-            <div className="border border-gray-700 rounded-lg">
-              <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-800">
-                <div className="flex items-center gap-3">
-                  <span className="text-gray-400">2-Modul.</span>
-                  <h2 className="font-medium">Murakkab typelar</h2>
-                </div>
-                <FaChevronDown className="text-gray-400" />
-              </div>
-            </div>
-
-            {/* Module 3 */}
-            <div className="border border-gray-700 rounded-lg">
-              <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-800">
-                <div className="flex items-center gap-3">
-                  <span className="text-gray-400">3-Modul.</span>
-                  <h2 className="font-medium">Class</h2>
-                </div>
-                <FaChevronDown className="text-gray-400" />
+              ))}
               </div>
             </div>
           </div>

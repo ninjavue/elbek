@@ -1,120 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 import { PatternFormat } from 'react-number-format';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Auth = () => {
+  const navigate = useNavigate()
   const [isDark, setIsDark] = useState(true);
+  const [username, setUsername] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [first_name, setFirstName] = useState('');
+  const [last_name, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [isTestMode] = useState(true); // Toggle this for test/production mode
+  const [isTestMode] = useState(true);
 
-  useEffect(() => {
-    loginToEskiz();
-  }, []);
 
-  const loginToEskiz = async () => {
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     try {
-      const response = await fetch('/eskiz-api/auth/login', {
+      const response = await fetch('http://localhost:8000/api/v1/registration/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: "yoldoshovumrzoq8@gmail.com",
-          password: "g0d3PHLscPS5NWCi0lb8zk2zX7IKbZkNucPz6AsL"
+          email,
+          password,
+          username,
+          phone_number: phoneNumber,
+          last_name,
+          first_name
         })
       });
-
       const data = await response.json();
-      if (data.data?.token) {
-        setToken(data.data.token);
-        console.log('Login successful');
+      if (data) {
+        setLoading(false)
+        navigate('/login')
       } else {
-        console.error('Token not received:', data);
+        console.error('Token not received');
       }
     } catch (error) {
       console.error('Login error:', error);
-    }
-  };
-
-  const generateRandomCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-
-  const sendVerificationCode = async (phone) => {
-    if (!token) {
-      console.error('No token available');
-      alert('Tizim xatosi, iltimos qaytadan urinib ko\'ring');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const cleanPhone = phone.replace(/\D/g, '');
-      if (cleanPhone.length !== 9) {
-        console.error('Phone number must be 9 digits');
-        return;
-      }
-
-      const code = generateRandomCode();
-      setVerificationCode(code);
-      
-      let message;
-      if (isTestMode) {
-        // Test mode - using allowed test message format
-        message = "Bu Eskiz dan test";
-      } else {
-        // Production mode - can use custom message
-        message = `Edu.uz: Sizning tasdiqlash kodingiz: ${code}`;
-      }
-
-      const requestData = {
-        mobile_phone: '998' + cleanPhone,
-        message: message,
-        from: '4546',
-        callback_url: 'http://0000.uz/test.php' // Optional callback URL
-      };
-
-      const response = await fetch('/eskiz-api/message/sms/send', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-      });
-
-      const data = await response.json();
-      console.log('SMS response:', data);
-      
-      if (response.ok || data.status === 'waiting') {
-        console.log('SMS sent successfully');
-        if (isTestMode) {
-          alert(`Test rejimi: Sizning tasdiqlash kodingiz ${code}`);
-        }
-      } else {
-        throw new Error(data.message || 'SMS sending failed');
-      }
-    } catch (error) {
-      console.error('Error sending SMS:', error);
-      alert('SMS yuborishda xatolik yuz berdi');
-      
-      if (error.message.includes('token') || error.message.includes('unauthorized')) {
-        await loginToEskiz();
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePhoneSubmit = (e) => {
-    e.preventDefault();
-    if (phoneNumber.replace(/\D/g, '').length === 9) {
-      sendVerificationCode(phoneNumber);
-    } else {
-      alert('Iltimos, to\'liq telefon raqamini kiriting');
     }
   };
 
@@ -129,32 +59,91 @@ const Auth = () => {
           Edu.uzga xush kelibsiz
         </h1>
         
-        <form onSubmit={handlePhoneSubmit}>
+        <form onSubmit={handleAuth}>
+          <div className="space-y-4">
+            <label className={`block text-base -mb-2 font-semibold ${
+              isDark ? 'text-gray-300' : 'text-gray-600'
+            }`}>
+              Username
+            </label>
+            <div className="relative">
+              <input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className={`text-lg w-full pl-2 pr-2 py-2 rounded-lg outline-none transition-colors duration-200 mb-2 ${
+                  isDark 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-blue-400'
+                } border focus:ring-2 focus:border-transparent`}
+                placeholder="Username"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <label className={`block text-base -mb-2 font-semibold ${
+              isDark ? 'text-gray-300' : 'text-gray-600'
+            }`}>
+             Ism
+            </label>
+            <div className="relative">
+              <input
+                value={first_name}
+                onChange={(e) => setFirstName(e.target.value)}
+                className={`text-lg w-full pl-2 pr-2 py-2 rounded-lg outline-none transition-colors duration-200 mb-2 ${
+                  isDark 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-blue-400'
+                } border focus:ring-2 focus:border-transparent`}
+                placeholder="Ism"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <label className={`block text-base -mb-2 font-semibold ${
+              isDark ? 'text-gray-300' : 'text-gray-600'
+            }`}>
+              Familiya
+            </label>
+            <div className="relative">
+              <input
+                value={last_name}
+                onChange={(e) => setLastName(e.target.value)}
+                className={`text-lg w-full pl-2 pr-2 py-2 rounded-lg outline-none transition-colors duration-200 mb-2 ${
+                  isDark 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-blue-400'
+                } border focus:ring-2 focus:border-transparent`}
+                placeholder="Familiya"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <label className={`block text-base -mb-2 font-semibold ${
+              isDark ? 'text-gray-300' : 'text-gray-600'
+            }`}>
+              Email
+            </label>
+            <div className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={`text-lg w-full pl-2 pr-2 py-2 rounded-lg outline-none transition-colors duration-200 mb-2 ${
+                  isDark 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-blue-400'
+                } border focus:ring-2 focus:border-transparent`}
+                placeholder="Email"
+              />
+            </div>
+          </div>
           <div className="space-y-4">
             <label className={`block text-base -mb-2 font-semibold ${
               isDark ? 'text-gray-300' : 'text-gray-600'
             }`}>
               Telefon raqam
             </label>
-            
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center">
-                <button type="button" className={`flex items-center space-x-1 pl-4 pr-2 border-r h-full ${
-                  isDark ? 'border-gray-600' : 'border-gray-300'
-                }`}>
-                  <img 
-                    src="https://flagcdn.com/w20/uz.png" 
-                    alt="UZ flag"
-                    className="w-5 h-4 object-contain"
-                  />
-                  <FaChevronDown className={`text-xs ${
-                    isDark ? 'text-gray-400' : 'text-gray-500'
-                  }`} />
-                </button>
-              </div>
-              <div className="absolute text-lg inset-y-0 left-16 flex items-center pointer-events-none">
-                <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>+998</span>
-              </div>
               <PatternFormat
                 format="## ### ## ##"
                 allowEmptyFormatting
@@ -163,7 +152,7 @@ const Auth = () => {
                 onValueChange={(values) => {
                   setPhoneNumber(values.value);
                 }}
-                className={`text-lg w-full pl-[107px] pr-4 py-3 rounded-lg outline-none transition-colors duration-200 ${
+                className={`text-lg w-full pl-2 pr-2 py-2 rounded-lg outline-none transition-colors duration-200 ${
                   isDark 
                     ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500' 
                     : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-blue-400'
@@ -172,13 +161,31 @@ const Auth = () => {
               />
             </div>
           </div>
-
+          <div className="space-y-4">
+            <label className={`block text-base -mb-2 font-semibold ${
+              isDark ? 'text-gray-300' : 'text-gray-600'
+            }`}>
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`text-lg w-full pl-2 pr-2 py-2 rounded-lg outline-none transition-colors duration-200 mb-2 ${
+                  isDark 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-blue-400'
+                } border focus:ring-2 focus:border-transparent`}
+                placeholder="Parol"
+              />
+            </div>
+          </div>
+            <div className="space-y-4">
+              <Link to='/login' className='text-white hover:text-blue-700'>Sizda akount bormi? Login</Link>
+            </div>
           <button 
-            type="submit"
-            disabled={loading || !token}
-            className={`w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg mt-6 transition duration-200 ${
-              (loading || !token) ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className={`w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg mt-6 transition duration-200 `}
           >
             {loading ? 'Yuborilmoqda...' : 'Davom etish'}
           </button>

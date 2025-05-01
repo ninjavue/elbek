@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import foundation from '../../assets/images/foundation.webp'
 import javascript from '../../assets/images/js.webp'
@@ -29,6 +29,39 @@ const courses = [
 ]
 
 const Home = () => {
+  const [coursesAll, setAllCourses] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
+
+  const fetchAllCourses = async () => {
+    fetch("http://127.0.0.1:8000/api/v1/lesson-names")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Error" + res.status);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        let newData = []
+        let newProjects = []
+        data.forEach(course => {
+          if(course?.lesson_category?.category_name === 'Project'){
+            newProjects.push(course)
+          }else{
+            newData.push(course)
+          }
+        });
+        setAllCourses(newData);
+        setAllProjects(newProjects);
+      })
+      .catch((err) => {
+        console.error("Xatolik:", err);
+      });
+  };
+  
+   useEffect(() => {
+      fetchAllCourses();
+    }, []);
+
   return (
     <div className="space-y-8">
       {/* Welcome section */}
@@ -51,19 +84,41 @@ const Home = () => {
       <section>
         <h2 className="text-2xl font-bold mb-6 text-white">Mashhur kurslar</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map(course => (
+          {coursesAll.map(course => (
             <Link 
               key={course.id} 
-              to={course.path}
+              to={`/course/${course.id}`}
               className="dark:bg-[#18191A] bg-white border-[3px] dark:border-gray-700 border-gray-300 rounded overflow-hidden hover:transform hover:scale-105 transition-all duration-300"
             >
               <img 
-                src={course.image} 
-                alt={course.title} 
+                src={course.lesson_banner} 
+                alt={course.lesson_name} 
                 className="w-full h-48 object-cover"
               />
               <div className="p-3">
-                <h3 className="text-xl font-semibold dark:text-white text-black">{course.title}</h3>
+                <h3 className="text-xl font-semibold dark:text-white text-black">{course.lesson_name}</h3>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+      {/* Projects grid */}
+      <section>
+        <h2 className="text-2xl font-bold mb-6 text-white">Loyihalar</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {allProjects.map(course => (
+            <Link 
+              key={course.id} 
+              to={course.id}
+              className="dark:bg-[#18191A] bg-white border-[3px] dark:border-gray-700 border-gray-300 rounded overflow-hidden hover:transform hover:scale-105 transition-all duration-300"
+            >
+              <img 
+                src={course.lesson_banner} 
+                alt={course.lesson_name} 
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-3">
+                <h3 className="text-xl font-semibold dark:text-white text-black">{course.lesson_name}</h3>
               </div>
             </Link>
           ))}

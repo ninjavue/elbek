@@ -48,7 +48,14 @@ const Courses = () => {
         return res.json();
       })
       .then((data) => {
-        setCategories(data);
+        let newData = []
+        data.forEach(category => {
+          if(category?.category_name === 'Project'){
+            return
+          }
+          newData.push(category)
+        });
+        setCategories(newData);
         setLoading(false);
       })
       .catch((err) => {
@@ -64,12 +71,23 @@ const Courses = () => {
         return res.json();
       })
       .then((data) => {
-        setAllCourses(data);
+        let newData = []
+        data.forEach(course => {
+          if(course?.lesson_category?.category_name === 'Project'){
+            return
+          }
+          newData.push(course)
+        });
+        setAllCourses(newData);
       })
       .catch((err) => {
         console.error("Xatolik:", err);
       });
   };
+
+  const filteredCourses = isCategory === 'all'
+  ? allcourses
+  : allcourses.filter(course => course.lesson_category.id === isCategory);
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -98,7 +116,7 @@ const Courses = () => {
           )}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allcourses.map((course) => (
+          {filteredCourses.map((course) => (
             <Link
               key={course.id}
               to={`/course/${course.id}`}
