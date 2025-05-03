@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { FaChevronDown } from 'react-icons/fa';
 import { PatternFormat } from 'react-number-format';
 import { Link, useNavigate } from 'react-router-dom';
 

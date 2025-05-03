@@ -6,3 +6,5 @@ export { default as Course } from './course';
 export { default as Lesson } from './lesson';
 export { default as Login } from './login';
 export { default as Dashboard } from './dashboard';
+export { default as Payment } from './payment';
+export { default as Account } from './account';
